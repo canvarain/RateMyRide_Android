@@ -1,0 +1,51 @@
+<resources>
+    <string name="app_name">Rate My Ride</string>
+    <string name="action_settings">Settings</string>
+
+    <!-- All Actions-->
+    <string name="action_rate">Rate</string>
+    <string name="action_search">Search</string>
+
+    <!-- Language Specific Translations -->
+    <string name="welcome">Welcome !</string>
+    <string name="guest">Guest</string>
+    <string name="today">Today</string>
+    <string name="week">Week</string>
+    <string name="month">Month</string>
+    <string name="all">All</string>
+    <string name="unknown_location">Unknown Location</string>
+    <string name="title_activity_search_results">Search Result</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="search_hint">Search Me Now</string>
+    <string name="title_activity_create_review">CreateReview</string>
+    <string name="cab_operator">Cab Operator</string>
+    <string name="driver_name">Driver Name</string>
+    <string name="rating">Rating</string>
+    <string name="review">Review</string>
+    <string name="vehicle_number">Vehicle Number</string>
+    <string name="start_date">Start Date</string>
+    <string name="end_date">End Date</string>
+    <string name="title_activity_review">Review</string>
+
+    <!-- Sample strings only for development -->
+    <string name="dev_review">
+        This is a large review string
+        “Drivers from Kuala Lumpur are well known for overcharging clients and detouring.
+
+“Even though they are supposed to charge by the meter, many drivers refuse to do so,” said LondonCabs.
+
+“The best advice is to simply wait for another vehicle if the driver resists using the meter,” it said.
+
+The article further described taxis in Kuala Lumpur as “rather old and in poor condition”.
+
+Rome’s taxi drivers came in second for their exorbitant rates and rudeness.
+
+“Most people cannot even find a vehicle available in Rome. Cars are scarce and the drivers are often rude and difficult to deal with,” said LondonCabs.
+
+“If it’s raining, expect to pay double or triple the price for a vehicle in Rome,” it added.
+
+Bangkok minicab drivers took third place for drivers getting lost and not knowing the way.
+
+Other cities that made the list were Paris, New York, Mumbai, Zurich, Cairo, Shanghai and Moscow.
+    </string>
+</resources>
