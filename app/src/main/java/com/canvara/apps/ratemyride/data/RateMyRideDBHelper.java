@@ -4,13 +4,11 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-
-import com.canvara.apps.ratemyride.Review;
-import  com.canvara.apps.ratemyride.data.RateMyRideContract.LocationEntry;
-import  com.canvara.apps.ratemyride.data.RateMyRideContract.ReviewEntry;
-import  com.canvara.apps.ratemyride.data.RateMyRideContract.ReviewAttachmentEntry;
-import  com.canvara.apps.ratemyride.data.RateMyRideContract.CabCompanyEntry;
-import  com.canvara.apps.ratemyride.data.RateMyRideContract.ReportEntry;
+import com.canvara.apps.ratemyride.data.RateMyRideContract.CabCompanyEntry;
+import com.canvara.apps.ratemyride.data.RateMyRideContract.LocationEntry;
+import com.canvara.apps.ratemyride.data.RateMyRideContract.ReportEntry;
+import com.canvara.apps.ratemyride.data.RateMyRideContract.ReviewAttachmentEntry;
+import com.canvara.apps.ratemyride.data.RateMyRideContract.ReviewEntry;
 
 /**
  * Copyright (C) 2015, Canvara Technologies
