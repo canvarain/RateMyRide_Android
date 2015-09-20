@@ -1,5 +1,6 @@
 package com.canvara.apps.ratemyride.data;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.test.AndroidTestCase;
@@ -86,4 +87,53 @@ public class TestDb extends AndroidTestCase {
         c.close();
         db.close();
     }
+
+    public void testLocationTable() {
+        insertLocation();
+    }
+
+    public long insertLocation() {
+
+        // Get an instance to a writable database
+        RateMyRideDBHelper dbHelper = new RateMyRideDBHelper(mContext);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        // Create Content Values for what needs to be inserted
+        // Thanks to Google Android Tutorial for the implementation idea
+        ContentValues testValues = TestUtilities.createNorthPoleLocationValues();
+        long locationId;
+        locationId = db.insert(RateMyRideContract.LocationEntry.TABLE_NAME, null, testValues);
+
+        // Assert that we got a row back
+        assertTrue(locationId != -1);
+
+        // Let us pull the data and verify the inserted record
+        Cursor cursor = db.query(
+                RateMyRideContract.LocationEntry.TABLE_NAME,
+                null, // all columns
+                null, // Columns for the "where" clause
+                null, // Values for the "where" clause
+                null, // columns to group by
+                null, // columns to filter by row groups
+                null // sort order
+        );
+
+        // Move the cursor to a valid database row and check to see if we got any records back
+        // from the query
+        assertTrue( "Error: No Records returned from location query", cursor.moveToFirst() );
+
+        // Validate the record against the actual data inserted
+        TestUtilities.validateCurrentRecord("Error: Location Query Validation Failed",
+                cursor, testValues);
+
+        // Move the cursor to demonstrate that there is only one record in the database
+        assertFalse( "Error: More than one record returned from location query",
+                cursor.moveToNext() );
+
+        // Close Cursor and Database
+        cursor.close();
+        db.close();
+        return locationId;
+    }
+
 }
