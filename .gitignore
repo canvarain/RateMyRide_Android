@@ -1,8 +1,5 @@
-/local.properties
-/.idea/workspace.xml
-/.idea/libraries
 .DS_Store
-/captures
+
 # Built application files
 *.apk
 *.ap_
@@ -16,6 +13,7 @@
 # Generated files
 bin/
 gen/
+out/
 
 # Gradle files
 .gradle/
@@ -30,3 +28,14 @@ proguard/
 
 # Log Files
 *.log
+
+# idea project files
+.idea/
+.idea/.name
+*.iml
+*.ipr
+*.iws
+
+# Libraries used by the app
+# Can explicitly add if we want, but shouldn't do so blindly.  Licenses, bloat, etc.
+/libs
