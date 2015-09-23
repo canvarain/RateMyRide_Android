@@ -44,6 +44,11 @@
             android:name=".Review"
             android:label="@string/title_activity_review" >
         </activity>
+        <provider
+            android:authorities="@string/content_authority"
+            android:name=".data.RateMyRideProvider"
+            android:exported="false"
+            android:syncable="true" />
     </application>
 
 </manifest>

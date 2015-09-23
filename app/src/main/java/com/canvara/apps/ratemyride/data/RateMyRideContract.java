@@ -15,9 +15,10 @@ import android.text.format.Time;
 /**
  * Defines the tables and columns for the RateMyRide database
  */
-public class RateMyRideContract {
+public class    RateMyRideContract {
     // The "Content Authority" is the global name for the entire content provier.
     public static final String CONTENT_AUTHORITY = "com.canvara.apps.ratemyride";
+
 
     // Use "Content Authority" to create the base for all URI's with which the apps will contact the
     // content provider
@@ -26,11 +27,11 @@ public class RateMyRideContract {
 
     // Possible paths to access the content
     // Example content://com.canvara.apps.ratemyride/review is a valid path to look at review data
-    public static final String PATH_REVIEW = "review";
-    public static final String PATH_REVIEW_ATTACHMENT = "review_attachment";
-    public static final String PATH_CAB_COMPANY = "cab_company";
-    public static final String PATH_LOCATION = "location";
-    public static final String PATH_REPORT = "report";
+    public static final String PATH_REVIEW              = "review";
+    public static final String PATH_REVIEW_ATTACHMENT   = "review_attachment";
+    public static final String PATH_CAB_COMPANY         = "cab_company";
+    public static final String PATH_LOCATION            = "location";
+    public static final String PATH_REPORT              = "report";
 
     // To make it easy to query exact date, let us normalize the dates to the start of
     // Julian day at UTC
@@ -49,9 +50,9 @@ public class RateMyRideContract {
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_REVIEW).build();
 
         public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + PATH_REVIEW;
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_REVIEW;
         public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + PATH_REVIEW;
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_REVIEW;
 
         // Table Name
         public static final String TABLE_NAME = "review";
@@ -80,6 +81,37 @@ public class RateMyRideContract {
         public static Uri buildReviewUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
+
+        public static Uri buildReviewLocation(String location) {
+            return CONTENT_URI.buildUpon().appendPath(location).build();
+        }
+
+        public static Uri buildReviewLocationWithStartDate(String location, long startDate) {
+            long normalizedDate = normalizeDate(startDate);
+            return CONTENT_URI.buildUpon().appendPath(location)
+                    .appendQueryParameter(COLUMN_START_DATE, Long.toString(normalizedDate)).build();
+        }
+
+        public static Uri buildReviewLocationAndDate(String location, long date) {
+            return CONTENT_URI.buildUpon().appendPath(location)
+                    .appendPath(Long.toString(normalizeDate(date))).build();
+        }
+
+        public static String getLocationFromUri(Uri uri) {
+            return uri.getPathSegments().get(1);
+        }
+
+        public static long getDateFromUri(Uri uri) {
+            return Long.parseLong(uri.getPathSegments().get(2));
+        }
+
+        public static long getStartDateFromUri(Uri uri) {
+            String dateString = uri.getQueryParameter(COLUMN_START_DATE);
+            if (null != dateString && dateString.length() > 0)
+                return Long.parseLong(dateString);
+            else
+                return 0;
+        }
     }
 
     /**
@@ -90,9 +122,9 @@ public class RateMyRideContract {
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_REVIEW_ATTACHMENT).build();
 
         public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + PATH_REVIEW_ATTACHMENT;
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_REVIEW_ATTACHMENT;
         public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + PATH_REVIEW_ATTACHMENT;
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_REVIEW_ATTACHMENT;
 
         // Table Name
         public static final String TABLE_NAME = "review_attachment";
@@ -121,9 +153,9 @@ public class RateMyRideContract {
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_LOCATION).build();
 
         public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + PATH_LOCATION;
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_LOCATION;
         public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + PATH_LOCATION;
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" +  PATH_LOCATION;
 
         public static final String TABLE_NAME = "location";
 
@@ -156,9 +188,9 @@ public class RateMyRideContract {
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_CAB_COMPANY).build();
 
         public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + PATH_CAB_COMPANY;
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY  + "/" + PATH_CAB_COMPANY;
         public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + PATH_CAB_COMPANY;
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_CAB_COMPANY;
 
         public static final String TABLE_NAME = "cab_company";
 
@@ -188,9 +220,9 @@ public class RateMyRideContract {
                 BASE_CONTENT_URI.buildUpon().appendPath(PATH_REPORT).build();
 
         public static final String CONTENT_TYPE =
-                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + PATH_REPORT;
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_REPORT;
         public static final String CONTENT_ITEM_TYPE =
-                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + PATH_REPORT;
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_REPORT;
 
         public static final String TABLE_NAME = "report";
 
@@ -198,6 +230,8 @@ public class RateMyRideContract {
         // The cab company to which the review belongs to, this column will
         // store the server id and not the local integer
         public static final String COLUMN_CAB_COMPANY_ID = "cab_company_id";
+        // The location of the reviewer and the review itself
+        public static final String COLUMN_LOCATION_KEY = "location_id";
         // Total number of reviews
         public static final String COLUMN_TOTAL_REVIEWS = "total_reviews";
         // Total positive ratings for the cab company
@@ -209,8 +243,42 @@ public class RateMyRideContract {
         // End date for the report
         public static final String COLUMN_END_DATE = "end_date";
 
-        public static Uri buildCabCompanyUri(long id) {
+        public static Uri buildReportUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
+
+
+        public static Uri buildReportLocation(String location) {
+            return CONTENT_URI.buildUpon().appendPath(location).build();
+        }
+
+        public static Uri buildReportLocationWithStartDate(String location, long startDate) {
+            long normalizedDate = normalizeDate(startDate);
+            return CONTENT_URI.buildUpon().appendPath(location)
+                    .appendQueryParameter(COLUMN_START_DATE, Long.toString(normalizedDate)).build();
+        }
+
+        public static Uri buildReportLocationAndDate(String location, long date) {
+            return CONTENT_URI.buildUpon().appendPath(location)
+                    .appendPath(Long.toString(normalizeDate(date))).build();
+        }
+
+        public static String getLocationFromUri(Uri uri) {
+            return uri.getPathSegments().get(1);
+        }
+
+        public static long getDateFromUri(Uri uri) {
+            return Long.parseLong(uri.getPathSegments().get(2));
+        }
+
+        public static long getStartDateFromUri(Uri uri) {
+            String dateString = uri.getQueryParameter(COLUMN_START_DATE);
+            if (null != dateString && dateString.length() > 0) {
+                return Long.parseLong(dateString);
+            }
+            else {
+                return 0;
+            }
         }
     }
 }

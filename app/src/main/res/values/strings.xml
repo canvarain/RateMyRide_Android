@@ -48,4 +48,7 @@ Bangkok minicab drivers took third place for drivers getting lost and not knowin
 
 Other cities that made the list were Paris, New York, Mumbai, Zurich, Cairo, Shanghai and Moscow.
     </string>
+
+    <!-- Content Authority -->
+    <string name="content_authority">com.canvara.apps.ratemyride</string>
 </resources>
