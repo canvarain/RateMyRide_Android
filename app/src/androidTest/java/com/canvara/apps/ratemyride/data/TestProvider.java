@@ -6,11 +6,11 @@ import android.content.pm.ProviderInfo;
 import android.database.Cursor;
 import android.test.AndroidTestCase;
 
-import com.canvara.apps.ratemyride.data.RateMyRideContract.ReviewEntry;
-import com.canvara.apps.ratemyride.data.RateMyRideContract.ReviewAttachmentEntry;
-import com.canvara.apps.ratemyride.data.RateMyRideContract.LocationEntry;
 import com.canvara.apps.ratemyride.data.RateMyRideContract.CabCompanyEntry;
+import com.canvara.apps.ratemyride.data.RateMyRideContract.LocationEntry;
 import com.canvara.apps.ratemyride.data.RateMyRideContract.ReportEntry;
+import com.canvara.apps.ratemyride.data.RateMyRideContract.ReviewAttachmentEntry;
+import com.canvara.apps.ratemyride.data.RateMyRideContract.ReviewEntry;
 
 /**
  * Copyright (C) 2015, Canvara Technologies
