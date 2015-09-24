@@ -7,8 +7,10 @@ import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.location.Location;
 import android.net.Uri;
 import android.test.AndroidTestCase;
+import android.util.Log;
 
 import com.canvara.apps.ratemyride.Review;
 import com.canvara.apps.ratemyride.data.RateMyRideContract.CabCompanyEntry;
@@ -268,18 +270,13 @@ public class TestProvider extends AndroidTestCase {
      * and reading the inserted record
      */
     public void testInsertReadProvider() {
-        ContentValues locationValues = TestUtilities.createNorthPoleLocationValues();
 
+        ContentValues locationValues = TestUtilities.createNorthPoleLocationValues();
         long locationId = TestUtilities.insertValueAndTest(
                 "Error: TestInsertReadProvider failed, could not validate Location insert",
                 mContext,
                 LocationEntry.CONTENT_URI,
                 locationValues);
-        // Register the content observer for our insert.
-        // This time directly with the content resolver.
-
-
-
 
         // Let us test the cab company insert
         ContentValues cabCompanyValues = TestUtilities.createCabCompanyValues();
@@ -322,5 +319,81 @@ public class TestProvider extends AndroidTestCase {
         TestUtilities.validateCursor("Could not fetch review with startdate", reviewCursor, reviewValues);
     }
 
+    /**
+     * Tests the update of the location
+     */
+    public void testUpdateLocation() {
 
+        //  TODO the original example had tco registered on a cursor, however it is not working, need to fix this
+
+        // Create a new map of values, where column names are the keys
+        ContentValues values = TestUtilities.createNorthPoleLocationValues();
+
+        Uri locationUri = mContext.getContentResolver().
+                insert(LocationEntry.CONTENT_URI, values);
+        long locationRowId = ContentUris.parseId(locationUri);
+
+        // Verify we got a row back.
+        assertTrue(locationRowId != -1);
+        Log.d(LOG_TAG, "New row id: " + locationRowId);
+
+        ContentValues updatedValues = new ContentValues(values);
+        updatedValues.put(LocationEntry._ID, locationRowId);
+        updatedValues.put(LocationEntry.COLUMN_LOCATION, "Global Village");
+
+        TestUtilities.TestContentObserver tco = TestUtilities.getTestContentObserver();
+        mContext.getContentResolver().registerContentObserver(LocationEntry.CONTENT_URI, true, tco);
+        //locationCursor.registerContentObserver(tco);
+
+        int count = mContext.getContentResolver().update(
+                LocationEntry.CONTENT_URI, updatedValues, LocationEntry._ID + "= ?",
+                new String[]{Long.toString(locationRowId)});
+        assertEquals(count, 1);
+
+        // Test to make sure our observer is called.  If not, we throw an assertion.
+        tco.waitForNotificationOrFail();
+
+        mContext.getContentResolver().unregisterContentObserver(tco);
+        //locationCursor.close();
+
+        // A cursor is your primary interface to the query results.
+        Cursor cursor = mContext.getContentResolver().query(
+                LocationEntry.CONTENT_URI,
+                null,   // projection
+                LocationEntry._ID + " = " + locationRowId,
+                null,   // Values for the "where" clause
+                null    // sort order
+        );
+
+        TestUtilities.validateCursor("testUpdateLocation.  Error validating location entry update.",
+                cursor, updatedValues);
+
+        cursor.close();
+    }
+
+    public void testDeleteRecords() {
+        testInsertReadProvider();
+
+        // Register a content observer for our location delete.
+        TestUtilities.TestContentObserver locationObserver = TestUtilities.getTestContentObserver();
+        mContext.getContentResolver().registerContentObserver(LocationEntry.CONTENT_URI, true, locationObserver);
+
+        // Register a content observer for our cab company delete.
+        TestUtilities.TestContentObserver cabCompanyObserver = TestUtilities.getTestContentObserver();
+        mContext.getContentResolver().registerContentObserver(CabCompanyEntry.CONTENT_URI, true, cabCompanyObserver);
+
+        // Register a content observer for our review delete.
+        TestUtilities.TestContentObserver reviewObserver = TestUtilities.getTestContentObserver();
+        mContext.getContentResolver().registerContentObserver(ReviewEntry.CONTENT_URI, true, reviewObserver);
+        
+        deleteAllRecordsFromProvider();
+
+        locationObserver.waitForNotificationOrFail();
+        cabCompanyObserver.waitForNotificationOrFail();
+        reviewObserver.waitForNotificationOrFail();
+
+        mContext.getContentResolver().unregisterContentObserver(locationObserver);
+        mContext.getContentResolver().unregisterContentObserver(cabCompanyObserver);
+        mContext.getContentResolver().unregisterContentObserver(reviewObserver);
+    }
 }

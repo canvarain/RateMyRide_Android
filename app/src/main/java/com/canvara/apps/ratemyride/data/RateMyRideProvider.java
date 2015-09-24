@@ -8,7 +8,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
-
 /**
  * Copyright (C) 2015, Canvara Technologies
  *
@@ -395,6 +394,7 @@ public class RateMyRideProvider extends ContentProvider {
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
+
         getContext().getContentResolver().notifyChange(uri, null);
         return returnUri;
     }
@@ -450,9 +450,6 @@ public class RateMyRideProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
         int rowsUpdated;
 
-        // If selection is not provided, delete all rows and return the number of rows deleted
-        if (null == selection) selection = "1";
-
         switch(match) {
             case REVIEW:
                 rowsUpdated = db.update(RateMyRideContract.ReviewEntry.TABLE_NAME,
@@ -487,7 +484,6 @@ public class RateMyRideProvider extends ContentProvider {
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
-        // Because a null deletes all rows
         if (rowsUpdated != 0) {
             getContext().getContentResolver().notifyChange(uri, null);
         }
