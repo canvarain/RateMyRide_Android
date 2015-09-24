@@ -1,5 +1,6 @@
 package com.canvara.apps.ratemyride.data;
 
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.ContentObserver;
@@ -192,5 +193,42 @@ public class TestUtilities extends AndroidTestCase {
 
     static TestContentObserver getTestContentObserver() {
         return TestContentObserver.getTestContentObserver();
+    }
+
+    static long insertValueAndTest(String errorMsg,
+                                   Context context,
+                                   Uri contentUri,
+                                   ContentValues values) {
+        long retId;
+
+        TestUtilities.TestContentObserver tco = TestUtilities.getTestContentObserver();
+        context.getContentResolver().registerContentObserver(contentUri, true, tco);
+
+        Uri locationUri = context.getContentResolver().insert(contentUri, values);
+
+        // Did our content observer get called?
+        tco.waitForNotificationOrFail();
+        context.getContentResolver().unregisterContentObserver(tco);
+
+        retId = ContentUris.parseId(locationUri);
+
+        // Verify that we have got a row back
+        assertTrue(retId != -1);
+
+        // The data should have been inserted, let us query to verify the results
+
+        Cursor cursor = context.getContentResolver().query(contentUri,
+                null,
+                null,
+                null,
+                null);
+
+        TestUtilities.validateCursor(
+                errorMsg,
+                cursor,
+                values);
+
+        cursor.close();
+        return retId;
     }
 }

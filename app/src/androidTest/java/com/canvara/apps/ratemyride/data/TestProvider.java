@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.test.AndroidTestCase;
 
+import com.canvara.apps.ratemyride.Review;
 import com.canvara.apps.ratemyride.data.RateMyRideContract.CabCompanyEntry;
 import com.canvara.apps.ratemyride.data.RateMyRideContract.LocationEntry;
 import com.canvara.apps.ratemyride.data.RateMyRideContract.ReportEntry;
@@ -269,90 +270,57 @@ public class TestProvider extends AndroidTestCase {
     public void testInsertReadProvider() {
         ContentValues locationValues = TestUtilities.createNorthPoleLocationValues();
 
+        long locationId = TestUtilities.insertValueAndTest(
+                "Error: TestInsertReadProvider failed, could not validate Location insert",
+                mContext,
+                LocationEntry.CONTENT_URI,
+                locationValues);
         // Register the content observer for our insert.
         // This time directly with the content resolver.
 
-        TestUtilities.TestContentObserver tco = TestUtilities.getTestContentObserver();
-        mContext.getContentResolver().registerContentObserver(LocationEntry.CONTENT_URI, true, tco);
-        Uri locationUri = mContext.getContentResolver().insert(LocationEntry.CONTENT_URI, locationValues);
 
-        // Did our content observer get called?
-        tco.waitForNotificationOrFail();
-        mContext.getContentResolver().unregisterContentObserver(tco);
 
-        long locationId = ContentUris.parseId(locationUri);
-
-        // Verify that we have got a row back
-        assertTrue(locationId != -1);
-
-        // The data should have been inserted, let us query to verify the results
-
-        Cursor cursor = mContext.getContentResolver().query(LocationEntry.CONTENT_URI,
-                null,
-                null,
-                null,
-                null);
-
-        TestUtilities.validateCursor(
-                "Error: TestInsertReadProvider failed, could not validate the insert",
-                cursor,
-                locationValues);
 
         // Let us test the cab company insert
         ContentValues cabCompanyValues = TestUtilities.createCabCompanyValues();
-        tco = TestUtilities.getTestContentObserver();
-
-        mContext.getContentResolver().registerContentObserver(CabCompanyEntry.CONTENT_URI, true, tco);
-        Uri cabCompanyUri = mContext.getContentResolver().insert(CabCompanyEntry.CONTENT_URI, cabCompanyValues);
-
-        // Did our content observer get called?
-        tco.waitForNotificationOrFail();
-        mContext.getContentResolver().unregisterContentObserver(tco);
-
-        long cabCompanyId = ContentUris.parseId(cabCompanyUri);
-        // Verify that we have got a row back
-        assertTrue(cabCompanyId != -1);
-
-        // The data should have been inserted, let us query to verify the results
-        Cursor cabCompanycursor = mContext.getContentResolver().query(CabCompanyEntry.CONTENT_URI,
-                null,
-                null,
-                null,
-                null);
-
-        TestUtilities.validateCursor(
-                "Error: TestInsertReadProvider failed, could not validate the insert",
-                cabCompanycursor,
+        long cabCompanyId = TestUtilities.insertValueAndTest(
+                "Error: TestInsertReadProvider failed, could not validate Cab Company insert",
+                mContext,
+                CabCompanyEntry.CONTENT_URI,
                 cabCompanyValues);
 
         // We have a location and cab company let us insert some reviews
         ContentValues reviewValues = TestUtilities.createReviewValues(locationId, cabCompanyId);
-
-        tco = TestUtilities.getTestContentObserver();
-        mContext.getContentResolver().registerContentObserver(ReviewEntry.CONTENT_URI, true, tco);
-
-        Uri reviewUri = mContext.getContentResolver().insert(
+        long reviewId = TestUtilities.insertValueAndTest(
+                "Error: TestInsertReadProvider failed, could not validate Review insert",
+                mContext,
                 ReviewEntry.CONTENT_URI,
-                reviewValues
-        );
+                reviewValues);
 
-        assertTrue(reviewUri != null);
+        // Now let us test the joins
+        reviewValues.putAll(locationValues);
+        reviewValues.putAll(cabCompanyValues);
 
-        // getContext().getContentResolver().notifyChange(uri, null);
-        tco.waitForNotificationOrFail();
-        mContext.getContentResolver().unregisterContentObserver(tco);
-
-        // A cursor is your primary interface to the query results.
         Cursor reviewCursor = mContext.getContentResolver().query(
-                ReviewEntry.CONTENT_URI,
+                ReviewEntry.buildReviewLocationAndDate(TestUtilities.TEST_LOCATION, TestUtilities.TEST_REVIEW_DATE),
                 null,
                 null,
-                null, 
+                null,
                 null
         );
 
-        TestUtilities.validateCursor("testInsertReadProvider. Error validating ReviewEntry insert.",
-                reviewCursor, reviewValues);
+        TestUtilities.validateCursor("Could not fetch review with date", reviewCursor, reviewValues);
 
+        reviewCursor = mContext.getContentResolver().query(
+                ReviewEntry.buildReviewLocationWithStartDate(TestUtilities.TEST_LOCATION, TestUtilities.TEST_REVIEW_DATE),
+                null,
+                null,
+                null,
+                null
+        );
+
+        TestUtilities.validateCursor("Could not fetch review with startdate", reviewCursor, reviewValues);
     }
+
+
 }
