@@ -1,11 +1,13 @@
 package com.canvara.apps.ratemyride.data;
 
 import android.content.ComponentName;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.test.AndroidTestCase;
 
 import com.canvara.apps.ratemyride.data.RateMyRideContract.CabCompanyEntry;
@@ -13,6 +15,8 @@ import com.canvara.apps.ratemyride.data.RateMyRideContract.LocationEntry;
 import com.canvara.apps.ratemyride.data.RateMyRideContract.ReportEntry;
 import com.canvara.apps.ratemyride.data.RateMyRideContract.ReviewAttachmentEntry;
 import com.canvara.apps.ratemyride.data.RateMyRideContract.ReviewEntry;
+
+import junit.framework.Test;
 
 /**
  * Copyright (C) 2015, Canvara Technologies
@@ -256,5 +260,99 @@ public class TestProvider extends AndroidTestCase {
         );
 
         TestUtilities.validateCursor("testBasicReviewQuery", reviewCursor, reviewValues);
+    }
+
+    /**
+     * Tests the insert functionality, by first inserting the record
+     * and reading the inserted record
+     */
+    public void testInsertReadProvider() {
+        ContentValues locationValues = TestUtilities.createNorthPoleLocationValues();
+
+        // Register the content observer for our insert.
+        // This time directly with the content resolver.
+
+        TestUtilities.TestContentObserver tco = TestUtilities.getTestContentObserver();
+        mContext.getContentResolver().registerContentObserver(LocationEntry.CONTENT_URI, true, tco);
+        Uri locationUri = mContext.getContentResolver().insert(LocationEntry.CONTENT_URI, locationValues);
+
+        // Did our content observer get called?
+        tco.waitForNotificationOrFail();
+        mContext.getContentResolver().unregisterContentObserver(tco);
+
+        long locationId = ContentUris.parseId(locationUri);
+
+        // Verify that we have got a row back
+        assertTrue(locationId != -1);
+
+        // The data should have been inserted, let us query to verify the results
+
+        Cursor cursor = mContext.getContentResolver().query(LocationEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null);
+
+        TestUtilities.validateCursor(
+                "Error: TestInsertReadProvider failed, could not validate the insert",
+                cursor,
+                locationValues);
+
+        // Let us test the cab company insert
+        ContentValues cabCompanyValues = TestUtilities.createCabCompanyValues();
+        tco = TestUtilities.getTestContentObserver();
+
+        mContext.getContentResolver().registerContentObserver(CabCompanyEntry.CONTENT_URI, true, tco);
+        Uri cabCompanyUri = mContext.getContentResolver().insert(CabCompanyEntry.CONTENT_URI, cabCompanyValues);
+
+        // Did our content observer get called?
+        tco.waitForNotificationOrFail();
+        mContext.getContentResolver().unregisterContentObserver(tco);
+
+        long cabCompanyId = ContentUris.parseId(cabCompanyUri);
+        // Verify that we have got a row back
+        assertTrue(cabCompanyId != -1);
+
+        // The data should have been inserted, let us query to verify the results
+        Cursor cabCompanycursor = mContext.getContentResolver().query(CabCompanyEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null);
+
+        TestUtilities.validateCursor(
+                "Error: TestInsertReadProvider failed, could not validate the insert",
+                cabCompanycursor,
+                cabCompanyValues);
+
+        // We have a location and cab company let us insert some reviews
+        ContentValues reviewValues = TestUtilities.createReviewValues(locationId, cabCompanyId);
+
+        tco = TestUtilities.getTestContentObserver();
+        mContext.getContentResolver().registerContentObserver(ReviewEntry.CONTENT_URI, true, tco);
+
+        Uri reviewUri = mContext.getContentResolver().insert(
+                ReviewEntry.CONTENT_URI,
+                reviewValues
+        );
+
+        assertTrue(reviewUri != null);
+
+        // getContext().getContentResolver().notifyChange(uri, null);
+        tco.waitForNotificationOrFail();
+        mContext.getContentResolver().unregisterContentObserver(tco);
+
+        // A cursor is your primary interface to the query results.
+        Cursor reviewCursor = mContext.getContentResolver().query(
+                ReviewEntry.CONTENT_URI,
+                null,
+                null,
+                null, 
+                null
+        );
+
+        TestUtilities.validateCursor("testInsertReadProvider. Error validating ReviewEntry insert.",
+                reviewCursor, reviewValues);
+
     }
 }
