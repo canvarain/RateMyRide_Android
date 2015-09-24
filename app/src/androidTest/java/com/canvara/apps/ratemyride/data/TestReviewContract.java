@@ -35,7 +35,7 @@ public class TestReviewContract extends AndroidTestCase {
 
         String expectedURI = "content://com.canvara.apps.ratemyride/review/%2FChennai%2CTN/" +
                 Long.toString(NORMALIZED_TEST_REVIEW_DATE);
-        assertEquals("Error: Weather location Uri doesn't match our expected result",
+        assertEquals("Error: Review location and date Uri doesn't match our expected result",
                 locationWithDateUri.toString(),expectedURI
                 );
     }

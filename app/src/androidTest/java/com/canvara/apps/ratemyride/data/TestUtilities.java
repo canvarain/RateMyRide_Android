@@ -19,7 +19,10 @@ import java.util.UUID;
  */
 public class TestUtilities extends AndroidTestCase {
 
-    static final String TEST_LOCATION = "99705";
+    static final String TEST_LOCATION       = "99705";
+    static final String TEST_CAB_NAME       = "Fast Cabs";
+    static final long TEST_REVIEW_DATE      = 1442275200L; // September 15, 2015
+
 
     /**
      * Creates test values for the location table
@@ -59,6 +62,54 @@ public class TestUtilities extends AndroidTestCase {
     }
 
     /**
+     * Creates test values for cab company table
+     * @return ContentValues
+     */
+    static ContentValues createCabCompanyValues() {
+        ContentValues cabValues = new ContentValues();
+
+        cabValues.put(RateMyRideContract.CabCompanyEntry.COLUMN_NAME, TEST_CAB_NAME);
+        cabValues.put(RateMyRideContract.CabCompanyEntry.COLUMN_SERVER_ID, UUID.randomUUID().toString());
+        cabValues.put(RateMyRideContract.CabCompanyEntry.COLUMN_WEBSITE_URL, "");
+        cabValues.put(RateMyRideContract.CabCompanyEntry.COLUMN_THUMBNAIL_URL, "");
+
+        return cabValues;
+    }
+
+
+    /**
+     * Inserts cab company values into the location table
+     * @param context   database context
+     * @return          id of the row inserted, -1 in case of a failure
+     */
+    static long insertCabCompanyValues(Context context) {
+        // insert our test records into the database
+        RateMyRideDBHelper dbHelper = new RateMyRideDBHelper(context);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        ContentValues testValues = TestUtilities.createCabCompanyValues();
+
+        long cabCompanyId;
+        cabCompanyId = db.insert(RateMyRideContract.CabCompanyEntry.TABLE_NAME, null, testValues);
+
+        // Verify we got a row back.
+        assertTrue("Error: Failure to insert Cab Company Values", cabCompanyId != -1);
+
+        return cabCompanyId;
+    }
+
+    /**
+     * Vallidates a cursor
+     * @param error             Error message to throw
+     * @param valueCursor       Cursor containing record fetched
+     * @param expectedValues    Expected record
+     */
+    static void validateCursor(String error, Cursor valueCursor, ContentValues expectedValues) {
+        assertTrue("Empty cursor returned. " + error, valueCursor.moveToFirst());
+        validateCurrentRecord(error, valueCursor, expectedValues);
+        valueCursor.close();
+    }
+
+    /**
      * Validates if the current record contains the expected values
      * @param error             Error message to throw
      * @param valueCursor       Cursor containing record fetched
@@ -75,5 +126,20 @@ public class TestUtilities extends AndroidTestCase {
                     "' did not match the expected value '" +
                     expectedValue + "'. " + error, expectedValue, valueCursor.getString(idx));
         }
+    }
+
+    static ContentValues createReviewValues (long locationId, long cabCompanyId) {
+        ContentValues reviewValues = new ContentValues();
+        reviewValues.put(RateMyRideContract.ReviewEntry.COLUMN_START_DATE, TEST_REVIEW_DATE);
+        reviewValues.put(RateMyRideContract.ReviewEntry.COLUMN_END_DATE, TEST_REVIEW_DATE);
+        reviewValues.put(RateMyRideContract.ReviewEntry.COLUMN_LOCATION_KEY, locationId);
+        reviewValues.put(RateMyRideContract.ReviewEntry.COLUMN_CAB_COMPANY_KEY, cabCompanyId);
+        reviewValues.put(RateMyRideContract.ReviewEntry.COLUMN_DRIVER_NAME, "Ramesh");
+        reviewValues.put(RateMyRideContract.ReviewEntry.COLUMN_RATING, "5");
+        reviewValues.put(RateMyRideContract.ReviewEntry.COLUMN_REGISTRATION_NUMBER, "TN01AH0011");
+        reviewValues.put(RateMyRideContract.ReviewEntry.COLUMN_REMARKS, "Thanks, it was a great service");
+        reviewValues.put(RateMyRideContract.ReviewEntry.COLUMN_SERVER_ID, UUID.randomUUID().toString());
+
+        return reviewValues;
     }
 }

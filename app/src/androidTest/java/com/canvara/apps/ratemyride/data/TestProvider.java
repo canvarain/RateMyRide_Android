@@ -1,9 +1,11 @@
 package com.canvara.apps.ratemyride.data;
 
 import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.test.AndroidTestCase;
 
 import com.canvara.apps.ratemyride.data.RateMyRideContract.CabCompanyEntry;
@@ -223,5 +225,36 @@ public class TestProvider extends AndroidTestCase {
         );
         assertEquals("Error: The ReportEntry CONTENT_URI must return ReportEntry.CONTENT_TYPE",
                 ReportEntry.CONTENT_ITEM_TYPE, type);
+    }
+
+    /**
+     * Tests a basic review creation by inserting data into the database and
+     * then uses ContentProvider to read the data
+     */
+    public void testBasicReviewQuery() {
+
+        RateMyRideDBHelper dbHelper = new RateMyRideDBHelper(mContext);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+
+        long locationId     = TestUtilities.insertNorthPoleLocationValues(mContext);
+        long cabCompanyId   = TestUtilities.insertCabCompanyValues(mContext);
+        ContentValues reviewValues = TestUtilities.createReviewValues(locationId, cabCompanyId);
+
+        // we have the location, let us add a review now
+        long reviewId = db.insert(ReviewEntry.TABLE_NAME, null, reviewValues);
+        assertTrue("Unable to insert review entry into the database", reviewId != -1);
+
+        db.close();
+
+        Cursor reviewCursor = mContext.getContentResolver().query(
+          ReviewEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                null
+        );
+
+        TestUtilities.validateCursor("testBasicReviewQuery", reviewCursor, reviewValues);
     }
 }
