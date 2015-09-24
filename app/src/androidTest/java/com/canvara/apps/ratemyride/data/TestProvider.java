@@ -385,7 +385,7 @@ public class TestProvider extends AndroidTestCase {
         // Register a content observer for our review delete.
         TestUtilities.TestContentObserver reviewObserver = TestUtilities.getTestContentObserver();
         mContext.getContentResolver().registerContentObserver(ReviewEntry.CONTENT_URI, true, reviewObserver);
-        
+
         deleteAllRecordsFromProvider();
 
         locationObserver.waitForNotificationOrFail();
@@ -396,4 +396,60 @@ public class TestProvider extends AndroidTestCase {
         mContext.getContentResolver().unregisterContentObserver(cabCompanyObserver);
         mContext.getContentResolver().unregisterContentObserver(reviewObserver);
     }
-}
+
+    public void testBulkInsert() {
+        ContentValues locationValues = TestUtilities.createNorthPoleLocationValues();
+        long locationId = TestUtilities.insertValueAndTest(
+                "Error: testBulkInsert failed, could not validate Location insert",
+                mContext,
+                LocationEntry.CONTENT_URI,
+                locationValues);
+
+        // Let us test the cab company insert
+        ContentValues cabCompanyValues = TestUtilities.createCabCompanyValues();
+        long cabCompanyId = TestUtilities.insertValueAndTest(
+                "Error: testBulkInsert failed, could not validate Cab Company insert",
+                mContext,
+                CabCompanyEntry.CONTENT_URI,
+                cabCompanyValues);
+
+        // Now we can bulkInsert some weather.  In fact, we only implement BulkInsert for review
+        // entries.  With ContentProviders, you really only have to implement the features you
+        // use, after all.
+        ContentValues[] bulkInsertContentValues = TestUtilities.createBulkInsertReviewValues(locationId, cabCompanyId);
+
+        // Register a content observer for our bulk insert.
+        TestUtilities.TestContentObserver reviewObserver = TestUtilities.getTestContentObserver();
+        mContext.getContentResolver().registerContentObserver(ReviewEntry.CONTENT_URI, true, reviewObserver);
+
+        int insertCount = mContext.getContentResolver().bulkInsert(ReviewEntry.CONTENT_URI, bulkInsertContentValues);
+
+        // Students:  If this fails, it means that you most-likely are not calling the
+        // getContext().getContentResolver().notifyChange(uri, null); in your BulkInsert
+        // ContentProvider method.
+        reviewObserver.waitForNotificationOrFail();
+        mContext.getContentResolver().unregisterContentObserver(reviewObserver);
+
+        assertEquals(insertCount, TestUtilities.BULK_INSERT_RECORDS_TO_INSERT);
+
+        // A cursor is your primary interface to the query results.
+        Cursor cursor = mContext.getContentResolver().query(
+                ReviewEntry.CONTENT_URI,
+                null, // leaving "columns" null just returns all the columns.
+                null, // cols for "where" clause
+                null, // values for "where" clause
+                ReviewEntry.COLUMN_START_DATE + " ASC"  // sort order == by DATE ASCENDING
+        );
+
+        // we should have as many records in the database as we've inserted
+        assertEquals(cursor.getCount(), TestUtilities.BULK_INSERT_RECORDS_TO_INSERT);
+
+        // and let's make sure they match the ones we created
+        cursor.moveToFirst();
+        for ( int i = 0; i < TestUtilities.BULK_INSERT_RECORDS_TO_INSERT; i++, cursor.moveToNext() ) {
+            TestUtilities.validateCurrentRecord("testBulkInsert.  Error validating ReviewEntry " + i,
+                    cursor, bulkInsertContentValues[i]);
+        }
+        cursor.close();
+    }
+ }

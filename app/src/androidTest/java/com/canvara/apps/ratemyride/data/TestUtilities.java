@@ -28,7 +28,7 @@ public class TestUtilities extends AndroidTestCase {
     static final String TEST_LOCATION       = "99705";
     static final String TEST_CAB_NAME       = "Fast Cabs";
     static final long TEST_REVIEW_DATE      = 1442275200L; // September 15, 2015
-
+    static final int BULK_INSERT_RECORDS_TO_INSERT = 10;
 
     /**
      * Creates test values for the location table
@@ -46,6 +46,7 @@ public class TestUtilities extends AndroidTestCase {
 
         return testValues;
     }
+
 
     /**
      * Inserts the north pole location values into the location table
@@ -134,10 +135,13 @@ public class TestUtilities extends AndroidTestCase {
         }
     }
 
-    static ContentValues createReviewValues (long locationId, long cabCompanyId) {
+    /**
+     * Creates content values for review
+     */
+    static ContentValues createReviewValues (long locationId, long cabCompanyId, long reviewDate) {
         ContentValues reviewValues = new ContentValues();
-        reviewValues.put(RateMyRideContract.ReviewEntry.COLUMN_START_DATE, TEST_REVIEW_DATE);
-        reviewValues.put(RateMyRideContract.ReviewEntry.COLUMN_END_DATE, TEST_REVIEW_DATE);
+        reviewValues.put(RateMyRideContract.ReviewEntry.COLUMN_START_DATE, reviewDate);
+        reviewValues.put(RateMyRideContract.ReviewEntry.COLUMN_END_DATE, reviewDate);
         reviewValues.put(RateMyRideContract.ReviewEntry.COLUMN_LOCATION_KEY, locationId);
         reviewValues.put(RateMyRideContract.ReviewEntry.COLUMN_CAB_COMPANY_KEY, cabCompanyId);
         reviewValues.put(RateMyRideContract.ReviewEntry.COLUMN_DRIVER_NAME, "Ramesh");
@@ -147,6 +151,27 @@ public class TestUtilities extends AndroidTestCase {
         reviewValues.put(RateMyRideContract.ReviewEntry.COLUMN_SERVER_ID, UUID.randomUUID().toString());
 
         return reviewValues;
+    }
+
+    /**
+     * Overloaded method to create content values, uses static review date
+     */
+    static ContentValues createReviewValues(long locationId, long cabCompanyId) {
+        return createReviewValues(locationId, cabCompanyId, TEST_REVIEW_DATE);
+    }
+
+    /**
+     * Creates review content values for bulk insertion
+     */
+    static ContentValues[] createBulkInsertReviewValues(long locationRowId, long cabCompanyId) {
+        long currentTestDate = TestUtilities.TEST_REVIEW_DATE;
+        long millisecondsInADay = 1000*60*60*24;
+        ContentValues[] returnContentValues = new ContentValues[BULK_INSERT_RECORDS_TO_INSERT];
+
+        for ( int i = 0; i < BULK_INSERT_RECORDS_TO_INSERT; i++, currentTestDate+= millisecondsInADay ) {
+            returnContentValues[i] = createReviewValues(locationRowId, cabCompanyId, currentTestDate);
+        }
+        return returnContentValues;
     }
 
     // NOTE: Adapted from Sunshine Android Tutorial / App
