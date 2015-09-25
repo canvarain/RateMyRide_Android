@@ -44,6 +44,10 @@
             android:name=".Review"
             android:label="@string/title_activity_review" >
         </activity>
+        <activity
+            android:name=".SettingsActivity"
+            android:label="Settings">
+        </activity>
         <provider
             android:authorities="@string/content_authority"
             android:name=".data.RateMyRideProvider"

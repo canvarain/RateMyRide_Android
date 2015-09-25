@@ -51,4 +51,11 @@ Other cities that made the list were Paris, New York, Mumbai, Zurich, Cairo, Sha
 
     <!-- Content Authority -->
     <string name="content_authority">com.canvara.apps.ratemyride</string>
+
+    <!-- Preference Screen Values -->
+    <!-- Location Preferences -->
+    <string name="pref_location_label">Location</string>
+    <string name="pref_location_key">location</string>
+    <string name="pref_location_default">New Delhi</string>
+    <!-- End Location Preferences -->
 </resources>
