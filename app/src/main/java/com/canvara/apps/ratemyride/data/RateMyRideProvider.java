@@ -54,7 +54,12 @@ public class RateMyRideProvider extends ContentProvider {
                         " ON " + RateMyRideContract.ReportEntry.TABLE_NAME +
                         "." + RateMyRideContract.ReportEntry.COLUMN_LOCATION_KEY +
                         " = " + RateMyRideContract.LocationEntry.TABLE_NAME +
-                        "." + RateMyRideContract.LocationEntry._ID);
+                        "." + RateMyRideContract.LocationEntry._ID  + " INNER JOIN " +
+                        RateMyRideContract.CabCompanyEntry.TABLE_NAME +
+                        " ON " + RateMyRideContract.ReportEntry.TABLE_NAME +
+                        "." + RateMyRideContract.ReportEntry.COLUMN_CAB_COMPANY_KEY +
+                        " = " + RateMyRideContract.CabCompanyEntry.TABLE_NAME +
+                        "." + RateMyRideContract.CabCompanyEntry._ID);
     }
 
     private static final String sLocationSelection =
@@ -135,8 +140,8 @@ public class RateMyRideProvider extends ContentProvider {
             selection = sLocationWithStartDateSelectionReport;
             selectionArgs = new String[] {location, Long.toString(startDate)};
         }
-        return mDBHelper.getReadableDatabase().query(
-                RateMyRideContract.ReportEntry.TABLE_NAME,
+        return sReportQueryBuilder.query(
+                mDBHelper.getReadableDatabase(),
                 projection,
                 selection,
                 selectionArgs,
@@ -150,7 +155,7 @@ public class RateMyRideProvider extends ContentProvider {
         String location = RateMyRideContract.ReportEntry.getLocationFromUri(uri);
         long date = RateMyRideContract.ReportEntry.getDateFromUri(uri);
 
-        return sReviewQueryBuilder.query(mDBHelper.getReadableDatabase(),
+        return sReportQueryBuilder.query(mDBHelper.getReadableDatabase(),
                 projection,
                 sLocationAndStartDateSelectionReport,
                 new String[]{location, Long.toString(date)},
@@ -160,6 +165,18 @@ public class RateMyRideProvider extends ContentProvider {
         );
     }
 
+    /**
+     * returns a report cursor with joins to location and cab company
+     */
+    private Cursor getReport(String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+        return sReportQueryBuilder.query(mDBHelper.getReadableDatabase(),
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                sortOrder);
+    }
     private void normalizeDate(ContentValues values, String dateColumnName) {
         // normalize the date value
         if (values.containsKey(dateColumnName)) {
@@ -305,13 +322,9 @@ public class RateMyRideProvider extends ContentProvider {
             }
             case REPORT:
             {
-                retCursor = mDBHelper.getReadableDatabase().query(
-                        RateMyRideContract.ReportEntry.TABLE_NAME,
-                        projection,
+                retCursor = getReport(projection,
                         selection,
                         selectionArgs,
-                        null,
-                        null,
                         sortOrder
                 );
                 break;

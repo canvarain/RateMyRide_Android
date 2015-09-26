@@ -229,7 +229,7 @@ public class    RateMyRideContract {
 
         // The cab company to which the review belongs to, this column will
         // store the server id and not the local integer
-        public static final String COLUMN_CAB_COMPANY_ID = "cab_company_id";
+        public static final String COLUMN_CAB_COMPANY_KEY = "cab_company_id";
         // The location of the reviewer and the review itself
         public static final String COLUMN_LOCATION_KEY = "location_id";
         // Total number of reviews

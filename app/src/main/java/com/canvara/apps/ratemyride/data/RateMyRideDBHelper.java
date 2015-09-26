@@ -67,8 +67,8 @@ public class RateMyRideDBHelper extends SQLiteOpenHelper {
                 " );" ;
 
         final String SQL_CREATE_REPORT_TABLE = "CREATE TABLE " + ReportEntry.TABLE_NAME + " (" +
-                ReportEntry._ID +                           " INTEGER NOT NULL," +
-                ReportEntry.COLUMN_CAB_COMPANY_ID +         " TEXT NOT NULL," +
+                ReportEntry._ID +                           " INTEGER PRIMARY KEY," +
+                ReportEntry.COLUMN_CAB_COMPANY_KEY +         " TEXT NOT NULL," +
                 ReviewEntry.COLUMN_LOCATION_KEY +           " INTEGER NOT NULL, " +
                 ReportEntry.COLUMN_POSITIVE_RATINGS +       " INTEGER NOT NULL," +
                 ReportEntry.COLUMN_NEGATIVE_RATINGS +       " INTEGER NOT NULL," +

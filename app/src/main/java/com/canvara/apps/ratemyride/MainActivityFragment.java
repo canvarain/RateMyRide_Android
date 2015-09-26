@@ -6,13 +6,20 @@ package com.canvara.apps.ratemyride;
  * Author: Hari Narasimhan
  */
 
+import android.database.Cursor;
+import android.net.Uri;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
+import com.canvara.apps.ratemyride.data.RateMyRideContract;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,22 +32,35 @@ import java.util.List;
  */
 public class MainActivityFragment extends Fragment {
 
-    private ArrayAdapter<String> mDashboardAdapter;
+    private final String LOG_TAG = MainActivityFragment.class.getSimpleName();
+    private DashboardAdapter mDashboardAdapter;
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        String locationSetting = Utility.getPreferredLocation(getActivity());
+        String sortOrder = RateMyRideContract.ReportEntry.COLUMN_TOTAL_REVIEWS + " ASC";
+        Uri reportForLocationUri = RateMyRideContract.ReportEntry.CONTENT_URI;
+
+        Cursor cursor = getActivity().getContentResolver()
+                .query(reportForLocationUri, null, null, null, sortOrder);
+
+        Log.d(LOG_TAG, "Cursor returned " + cursor.getCount() + " rows");
+        mDashboardAdapter = new DashboardAdapter(getActivity(), cursor, 0);
+
         View view =  inflater.inflate(R.layout.fragment_main, container, false);
-
-        // TODO Fetch this details from API and bind though sync adapter or volley
-        String[] dashboardArray = {"Ola Cabs", "Meru Cabs", "Fast Track", "Friends Call Taxi", "Bharati Call Taxi"};
-        List<String> dashboardList = new ArrayList<>(Arrays.asList(dashboardArray));
-
-        // Setup the dashboard adapter by binding the data and the template
-        mDashboardAdapter = new ArrayAdapter<>(getActivity(),
-                R.layout.list_item_dashboard,
-                R.id.list_item_cab_name,
-                dashboardList);
 
         ListView listView = (ListView) view.findViewById(R.id.listViewDashboard);
         listView.setAdapter(mDashboardAdapter);
@@ -48,5 +68,17 @@ public class MainActivityFragment extends Fragment {
         // TODO Set up an item click listener to view the details
 
         return view;
+    }
+
+    private void updateDashboard () {
+        FetchReportTask reportTask = new FetchReportTask(getActivity());
+        String location = Utility.getPreferredLocation(getActivity());
+        reportTask.execute(location);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateDashboard();
     }
 }
