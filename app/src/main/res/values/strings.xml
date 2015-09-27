@@ -58,4 +58,9 @@ Other cities that made the list were Paris, New York, Mumbai, Zurich, Cairo, Sha
     <string name="pref_location_key">location</string>
     <string name="pref_location_default">New Delhi</string>
     <!-- End Location Preferences -->
+
+    <!-- Display labels -->
+    <string name="label_percentage_positive">% Positive</string>
+    <string name="label_thousands">k</string>
+    <string name="label_reviews">Reviews</string>
 </resources>

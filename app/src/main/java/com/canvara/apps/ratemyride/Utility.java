@@ -16,4 +16,14 @@ public class Utility {
         return prefs.getString(context.getString(R.string.pref_location_key),
                 context.getString(R.string.pref_location_default));
     }
+
+
+    public static String convertToK(long value) {
+        double val = (value / 1000);
+        return String.format("%.0f", val);
+    }
+
+    public static String convertToPercentage(double value) {
+        return String.format("%.00f", value * 100);
+    }
 }

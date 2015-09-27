@@ -30,6 +30,13 @@ public class FetchReportTask extends AsyncTask<String, Void, Void> {
         mContext = context;
     }
 
+    private void deleteReportData() {
+        long rows = mContext.getContentResolver().delete(RateMyRideContract.ReportEntry.CONTENT_URI,null,null);
+
+        if(rows > 0) {
+            Log.d(LOG_TAG, "Report Table " + rows + " rows deleted");
+        }
+    }
     private long addLocation(String locationSetting, String location, double lat, double lng) {
 
         long locationId;
@@ -115,7 +122,7 @@ public class FetchReportTask extends AsyncTask<String, Void, Void> {
         reportValues.add(generateReportValues(locationId, addCabCompany("Fast Track"),88000,0.56,0.44,date, date));
         reportValues.add(generateReportValues(locationId, addCabCompany("Meru Cabs"), 93000, 0.91, 0.09, date, date));
         reportValues.add(generateReportValues(locationId, addCabCompany("Barathi Call Taxi"), 70000, 0.77, 0.23, date, date));
-        reportValues.add(generateReportValues(locationId, addCabCompany("Friends Call Taxi"), 560000, 0.47, 0.53, date, date));
+        reportValues.add(generateReportValues(locationId, addCabCompany("Friends Call Taxi"), 56000, 0.47, 0.53, date, date));
 
         ContentValues[] reportValuesArray = new ContentValues[reportValues.size()];
         reportValues.toArray(reportValuesArray);
@@ -159,6 +166,7 @@ public class FetchReportTask extends AsyncTask<String, Void, Void> {
         // TODO,replace with actual fetch
         // This is the placeholder for implementing reports fetching
         // We will make a HTTP call and format the result
+        deleteReportData();
         getReportDataFromJSON("", "");
         return null;
     }

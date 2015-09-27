@@ -8,32 +8,47 @@ package com.canvara.apps.ratemyride;
 
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import com.canvara.apps.ratemyride.data.RateMyRideContract;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import com.canvara.apps.ratemyride.data.RateMyRideContract;
+import com.canvara.apps.ratemyride.data.RateMyRideContract.ReportEntry;
+import com.canvara.apps.ratemyride.data.RateMyRideContract.CabCompanyEntry;
 
 /**
  * MainActivityFragment launches the dashboard for the Rate My Ride Application.
  * When this activity starts, it will look up the current location of the user and
  * fetch the dashboard details for the user.
  */
-public class MainActivityFragment extends Fragment {
+public class MainActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private final String LOG_TAG = MainActivityFragment.class.getSimpleName();
+
+    private static final int DASHBOARD_LOADER = 0;
     private DashboardAdapter mDashboardAdapter;
+
+    private static final String[] DASHBOARD_COLUMNS = {
+            ReportEntry.TABLE_NAME + "." + ReportEntry._ID,
+            CabCompanyEntry.COLUMN_NAME,
+            ReportEntry.COLUMN_TOTAL_REVIEWS,
+            ReportEntry.COLUMN_POSITIVE_RATINGS,
+            ReportEntry.COLUMN_NEGATIVE_RATINGS
+    };
+
+    static final int COL_REPORT_ENTRY_ID = 0;
+    static final int COL_COMPANY_NAME = 1;
+    static final int COL_TOTAL_REVIEWS = 2;
+    static final int COL_POSITIVE_RATINGS = 3;
+    static final int COL_NEGATIVE_RATINGS = 4;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -50,15 +65,7 @@ public class MainActivityFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        String locationSetting = Utility.getPreferredLocation(getActivity());
-        String sortOrder = RateMyRideContract.ReportEntry.COLUMN_TOTAL_REVIEWS + " ASC";
-        Uri reportForLocationUri = RateMyRideContract.ReportEntry.CONTENT_URI;
-
-        Cursor cursor = getActivity().getContentResolver()
-                .query(reportForLocationUri, null, null, null, sortOrder);
-
-        Log.d(LOG_TAG, "Cursor returned " + cursor.getCount() + " rows");
-        mDashboardAdapter = new DashboardAdapter(getActivity(), cursor, 0);
+        mDashboardAdapter = new DashboardAdapter(getActivity(), null, 0);
 
         View view =  inflater.inflate(R.layout.fragment_main, container, false);
 
@@ -80,5 +87,35 @@ public class MainActivityFragment extends Fragment {
     public void onStart() {
         super.onStart();
         updateDashboard();
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        getLoaderManager().initLoader(DASHBOARD_LOADER, null, this);
+        super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
+        String sortOrder = RateMyRideContract.ReportEntry.COLUMN_TOTAL_REVIEWS + " DESC";
+        Uri reportForLocationUri = RateMyRideContract.ReportEntry.CONTENT_URI;
+
+        return new CursorLoader(getActivity(),
+                reportForLocationUri,
+                DASHBOARD_COLUMNS,
+                null,
+                null,
+                sortOrder);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        mDashboardAdapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mDashboardAdapter.swapCursor(null);
     }
 }

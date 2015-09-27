@@ -18,7 +18,6 @@ import com.canvara.apps.ratemyride.data.RateMyRideContract;
 
 public class DashboardAdapter extends CursorAdapter {
 
-
     public DashboardAdapter (Context context, Cursor c, int flags) {
         super (context, c, flags);
     }
@@ -31,15 +30,35 @@ public class DashboardAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
+
+        String labelReviews = context.getResources().getString(R.string.label_reviews);
+        String labelPercentage = context.getResources().getString(R.string.label_percentage_positive);
+        String thousands = context.getResources().getString(R.string.label_thousands);
+
         TextView cabNameView = (TextView) view.findViewById(R.id.list_item_cab_name);
+        TextView totalReviewsView = (TextView) view.findViewById(R.id.list_item_review_count);
+        TextView positiveReviewsView = (TextView) view.findViewById(R.id.list_item_positive_reviews);
 
         cabNameView.setText(getCabNameFromCursor(cursor));
+        totalReviewsView.setText(getReviewCountFromCursor(cursor) + thousands + " " + labelReviews);
+        positiveReviewsView.setText(getPostiveReviewsFromCursor(cursor) + labelPercentage);
+
     }
 
     // TODO to implement view holder pattern, this is just for testing
     private String getCabNameFromCursor(Cursor cursor) {
-        int idx_cab_name = cursor.getColumnIndex(RateMyRideContract.CabCompanyEntry.COLUMN_NAME);
-        String cabName = cursor.getString(idx_cab_name);
-        return cabName;
+        return cursor.getString(MainActivityFragment.COL_COMPANY_NAME);
+    }
+
+    private String getReviewCountFromCursor(Cursor cursor) {
+        return Utility.convertToK(
+                cursor.getLong(MainActivityFragment.COL_TOTAL_REVIEWS)
+        );
+    }
+
+    private String getPostiveReviewsFromCursor(Cursor cursor) {
+        return Utility.convertToPercentage(
+          cursor.getDouble(MainActivityFragment.COL_POSITIVE_RATINGS)
+        );
     }
 }
